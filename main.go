@@ -8,6 +8,8 @@ import (
 	"log"
 	"os"
 	"strings"
+
+	"github.com/dring1/cocktailio/models"
 )
 
 func main() {
@@ -31,14 +33,8 @@ func main() {
 	json.NewEncoder(w).Encode(cocktails)
 }
 
-type CocktailRecipe struct {
-	Name         string   `json:"name"`
-	Ingredients  []string `json:"ingredients"`
-	Instructions []string `json:"instructions"`
-}
-
-func ParseFile(filePath string) ([]*CocktailRecipe, error) {
-	cocktailRecipes := []*CocktailRecipe{}
+func ParseFile(filePath string) ([]*models.Cocktail, error) {
+	cocktailRecipes := []*models.Cocktail{}
 	existingNames := make(map[string]interface{})
 
 	// read file line by line
@@ -49,7 +45,7 @@ func ParseFile(filePath string) ([]*CocktailRecipe, error) {
 	defer f.Close()
 	// for each line
 	scanner := bufio.NewScanner(f)
-	currentCocktail := &CocktailRecipe{}
+	currentCocktail := &models.Cocktail{}
 	for scanner.Scan() {
 		rawText := scanner.Text()
 
@@ -60,7 +56,7 @@ func ParseFile(filePath string) ([]*CocktailRecipe, error) {
 			if currentCocktail.Name != "" {
 				cocktailRecipes = append(cocktailRecipes, currentCocktail)
 			}
-			currentCocktail = &CocktailRecipe{}
+			currentCocktail = &models.Cocktail{}
 			name := strings.SplitAfter(string(rawText), ".")
 			if len(name) < 2 {
 				return nil, fmt.Errorf("%s too short", name)
@@ -85,7 +81,7 @@ func ParseFile(filePath string) ([]*CocktailRecipe, error) {
 			if len(ingredient) < 2 {
 				return nil, fmt.Errorf("ingredient:\n%s\n too short", ingredient)
 			}
-			currentCocktail.Ingredients = append(currentCocktail.Ingredients, strings.TrimSpace(ingredient[1]))
+			currentCocktail.Ingredients = append(currentCocktail.Ingredients, &models.Ingredient{Name: strings.TrimSpace(ingredient[1])})
 			//fmt.Printf("\tingredient:\t%s\n", ingredient)
 		}
 	}
